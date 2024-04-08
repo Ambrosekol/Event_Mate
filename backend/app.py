@@ -1,11 +1,9 @@
-from flask import Flask, abort, flash, jsonify, redirect, request, render_template, url_for
+from flask import Flask, abort, flash, jsonify, redirect, request, render_template
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from sqlalchemy.exc import NoResultFound
 from shared.auth import Auth, usher, planner
 from typing import Union
-from flask_mail import Mail, Message
-from flask_jwt_extended import JWTManager, create_access_token, decode_token
 import datetime
 import random
 
@@ -13,20 +11,10 @@ import random
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'df02efcafd88339a979746fe'
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'k1b5M@example.com'
-app.config['MAIL_PASSWORD'] = 'yourpassword'
-app.config["JWT_SECRET_KEY"] = "super-secret"
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
-app.config["JWT_REFRESH_TOKEN_EXPIRES"] = datetime.timedelta(days=30)
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
 
 
 bcrypt = Bcrypt(app)
-mail = Mail(app)
-jwt = JWTManager(app)
+
 
 
 AUTH = Auth()
@@ -40,15 +28,12 @@ login_manager.login_view = 'login'
 def load_user(user_id: str) -> Union[None, usher.Usher, planner.Planner]:
     try:
        user = AUTH.db.searchitem(usher.Usher, id=user_id)
-       print("trying.....................usher")
        return user
     except NoResultFound:
        try:
           user = AUTH.db.searchitem(planner.Planner, id=user_id)
-          print("trying.....................planner")
           return user
        except NoResultFound:
-         print("returning.............................None")
          return None
 
 
